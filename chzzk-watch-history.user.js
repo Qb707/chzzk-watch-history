@@ -5110,7 +5110,7 @@
                             .replace(/&gt;/gi, '>')
                             .replace(/\s+/g, ' ')
                             .trim();
-                        const safeTitle = htmlTitle.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 100);
+                        const safeTitle = htmlTitle.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
                         const safeBody = diagnosticText
                             .replace(/https?:\/\/[^\s"'<>]+/gi, '[주소 생략]')
                             .replace(/([?&](?:key|token|auth|code|state)=)[^&\s"'<>]*/gi, '$1[가림]')
