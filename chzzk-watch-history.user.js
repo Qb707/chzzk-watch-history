@@ -15,6 +15,7 @@
 // @connect      api.chzzk.naver.com
 // @connect      script.google.com
 // @connect      script.googleusercontent.com
+// @connect      raw.githubusercontent.com
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -4970,6 +4971,51 @@
             : '온라인 저장소 미설정';
     }
 
+    // 사이트 진입/새로고침 시 GitHub의 최신 스크립트 버전을 한 번 확인합니다.
+    function checkLatestScriptVersion() {
+        const label = document.getElementById('bn-version-label');
+        if (!label || typeof GM_xmlhttpRequest !== 'function') return;
+
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js?check=' + Date.now(),
+            timeout: 15000,
+            onload: response => {
+                if (response.status < 200 || response.status >= 300) return;
+                const match = String(response.responseText || '').match(/^\\s*\/\/ @version\\s+([^\\s]+)/m);
+                if (!match) return;
+
+                const latest = match[1].trim();
+                const currentParts = SCRIPT_VERSION.split('.').map(Number);
+                const latestParts = latest.split('.').map(Number);
+                let comparison = 0;
+                for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+                    const a = currentParts[i] || 0;
+                    const b = latestParts[i] || 0;
+                    if (b !== a) { comparison = b > a ? 1 : -1; break; }
+                }
+
+                if (comparison > 0) {
+                    label.textContent = 'V' + SCRIPT_VERSION + ' · 업데이트 있음';
+                    label.title = '최신 버전 V' + latest + '이 있습니다. Tampermonkey 대시보드에서 업데이트해 주세요.';
+                    label.style.color = '#ffd166';
+                } else {
+                    label.textContent = 'V' + SCRIPT_VERSION;
+                    label.title = comparison === 0
+                        ? '최신 버전입니다.'
+                        : '현재 설치된 버전이 GitHub 최신 버전보다 높습니다.';
+                    label.style.color = 'rgba(255,255,255,0.48)';
+                }
+            },
+            onerror: () => {
+                label.title = '최신 버전을 확인하지 못했습니다. 네트워크 또는 GitHub 연결을 확인해 주세요.';
+            },
+            ontimeout: () => {
+                label.title = '최신 버전 확인 시간이 초과되었습니다.';
+            }
+        });
+    }
+
     function configureOnlineStorage() {
         const current = getOnlineConfig();
         const enteredUrl = prompt('Google Apps Script 웹 앱 URL을 입력해주세요.', current.url);
@@ -7517,6 +7563,7 @@
          * 패널을 만든 뒤 숨깁니다.
          */
         createPanel();
+        checkLatestScriptVersion();
 
         if (
             data.settings.panelClosed
