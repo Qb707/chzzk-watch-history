@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.2
+// @version      2.9.3
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.2';
+    const SCRIPT_VERSION = '2.9.3';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
