@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.5
+// @version      2.9.6
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.5';
+    const SCRIPT_VERSION = '2.9.6';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
@@ -5096,7 +5096,32 @@
                         const result = JSON.parse(response.responseText || '{}');
                         resolve(result);
                     } catch (error) {
-                        reject(new Error('서버 응답이 JSON이 아닙니다.\nHTTP 상태: ' + response.status + '\n응답 형식: ' + contentType + '\n최종 주소: ' + responseUrl + '\n원인: ' + error.message));
+                        // HTML 응답의 제목과 짧은 본문을 추출해 서버 측 오류 원인을 확인합니다.
+                        // 접속 키, URL 쿼리, 스크립트/스타일 내용은 표시하지 않습니다.
+                        let diagnosticText = String(response.responseText || '');
+                        const htmlTitle = (diagnosticText.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i) || [])[1] || '';
+                        diagnosticText = diagnosticText
+                            .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')
+                            .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')
+                            .replace(/<[^>]+>/g, ' ')
+                            .replace(/&nbsp;|&#160;/gi, ' ')
+                            .replace(/&amp;/gi, '&')
+                            .replace(/&lt;/gi, '<')
+                            .replace(/&gt;/gi, '>')
+                            .replace(/\\s+/g, ' ')
+                            .trim();
+                        const safeTitle = htmlTitle.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 100);
+                        const safeBody = diagnosticText
+                            .replace(/https?:\\/\\/[^\\s"'<>]+/gi, '[주소 생략]')
+                            .replace(/([?&](?:key|token|auth|code|state)=)[^&\\s"'<>]*/gi, '$1[가림]')
+                            .slice(0, 350);
+                        reject(new Error(
+                            '서버 응답이 JSON이 아닙니다.\\nHTTP 상태: ' + response.status +
+                            '\\n응답 형식: ' + contentType +
+                            '\\n응답 제목: ' + (safeTitle || '없음') +
+                            '\\n응답 내용 일부: ' + (safeBody || '내용 없음') +
+                            '\\n원인: ' + error.message
+                        ));
                     }
                 },
                 onerror: error => {
