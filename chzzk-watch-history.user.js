@@ -32,7 +32,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.1';
+    const SCRIPT_VERSION = '2.9.2';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
