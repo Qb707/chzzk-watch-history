@@ -4991,7 +4991,7 @@
             timeout: 15000,
             onload: response => {
                 if (response.status < 200 || response.status >= 300) return;
-                const match = String(response.responseText || '').match(/^\\s*\/\/ @version\\s+([^\\s]+)/m);
+                const match = String(response.responseText || '').match(/^\s*\/\/ @version\s+([^\s]+)/m);
                 if (!match) return;
 
                 const latest = match[1].trim();
