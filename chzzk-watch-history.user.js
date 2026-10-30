@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.1
+// @version      2.9.2
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -5022,15 +5022,18 @@
                 data: isGet ? undefined : JSON.stringify({ ...body, key: config.key }),
                 timeout: 30000,
                 onload: response => {
+                    const responseUrl = response.finalUrl || url;
+                    const contentTypeMatch = (response.responseHeaders || '').match(/content-type:\s*([^\r\n]+)/i);
+                    const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : '확인 불가';
+                    if (response.status < 200 || response.status >= 300) {
+                        reject(new Error('HTTP 오류: ' + response.status + '\n응답 형식: ' + contentType + '\n최종 주소: ' + responseUrl));
+                        return;
+                    }
                     try {
                         const result = JSON.parse(response.responseText || '{}');
-                        if (response.status < 200 || response.status >= 300) {
-                            reject(new Error('HTTP 오류: ' + response.status));
-                            return;
-                        }
                         resolve(result);
                     } catch (error) {
-                        reject(new Error('서버 응답을 해석할 수 없습니다. ' + error.message));
+                        reject(new Error('서버 응답이 JSON이 아닙니다.\nHTTP 상태: ' + response.status + '\n응답 형식: ' + contentType + '\n최종 주소: ' + responseUrl + '\n원인: ' + error.message));
                     }
                 },
                 onerror: () => reject(new Error('네트워크 연결 오류')),
