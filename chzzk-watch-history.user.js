@@ -5099,21 +5099,21 @@
                         // HTML 응답의 제목과 짧은 본문을 추출해 서버 측 오류 원인을 확인합니다.
                         // 접속 키, URL 쿼리, 스크립트/스타일 내용은 표시하지 않습니다.
                         let diagnosticText = String(response.responseText || '');
-                        const htmlTitle = (diagnosticText.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i) || [])[1] || '';
+                        const htmlTitle = (diagnosticText.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || '';
                         diagnosticText = diagnosticText
-                            .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')
-                            .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')
+                            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+                            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
                             .replace(/<[^>]+>/g, ' ')
                             .replace(/&nbsp;|&#160;/gi, ' ')
                             .replace(/&amp;/gi, '&')
                             .replace(/&lt;/gi, '<')
                             .replace(/&gt;/gi, '>')
-                            .replace(/\\s+/g, ' ')
+                            .replace(/\s+/g, ' ')
                             .trim();
                         const safeTitle = htmlTitle.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 100);
                         const safeBody = diagnosticText
-                            .replace(/https?:\\/\\/[^\\s"'<>]+/gi, '[주소 생략]')
-                            .replace(/([?&](?:key|token|auth|code|state)=)[^&\\s"'<>]*/gi, '$1[가림]')
+                            .replace(/https?:\/\/[^\s"'<>]+/gi, '[주소 생략]')
+                            .replace(/([?&](?:key|token|auth|code|state)=)[^&\s"'<>]*/gi, '$1[가림]')
                             .slice(0, 350);
                         reject(new Error(
                             '서버 응답이 JSON이 아닙니다.\\nHTTP 상태: ' + response.status +
