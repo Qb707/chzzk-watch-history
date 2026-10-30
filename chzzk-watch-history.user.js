@@ -2168,6 +2168,12 @@
             </div>
         `;
 
+        panel.querySelector('#bn-version-label')?.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            checkLatestScriptVersion(true);
+        });
+
         document.body.appendChild(panel);
 
         applyPanelSize();
@@ -4972,7 +4978,7 @@
     }
 
     // 사이트 진입/새로고침 시 GitHub의 최신 스크립트 버전을 한 번 확인합니다.
-    function checkLatestScriptVersion() {
+    function checkLatestScriptVersion(openUpdatePage = false) {
         const label = document.getElementById('bn-version-label');
         if (!label || typeof GM_xmlhttpRequest !== 'function') return;
 
@@ -4999,19 +5005,27 @@
                     label.textContent = 'V' + SCRIPT_VERSION + ' · 업데이트 있음';
                     label.title = '최신 버전 V' + latest + '이 있습니다. Tampermonkey 대시보드에서 업데이트해 주세요.';
                     label.style.color = '#ffd166';
+                    if (updateTab) updateTab.location.href = 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js';
+                    else if (openUpdatePage) window.open('https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js', '_blank');
                 } else {
                     label.textContent = 'V' + SCRIPT_VERSION;
                     label.title = comparison === 0
                         ? '최신 버전입니다.'
                         : '현재 설치된 버전이 GitHub 최신 버전보다 높습니다.';
                     label.style.color = 'rgba(255,255,255,0.48)';
+                    if (updateTab) updateTab.close();
+                    if (openUpdatePage) alert('현재 최신 버전입니다. (V' + SCRIPT_VERSION + ')');
                 }
             },
             onerror: () => {
                 label.title = '최신 버전을 확인하지 못했습니다. 네트워크 또는 GitHub 연결을 확인해 주세요.';
+                if (updateTab) updateTab.close();
+                if (openUpdatePage) alert('GitHub 연결에 실패했습니다.');
             },
             ontimeout: () => {
                 label.title = '최신 버전 확인 시간이 초과되었습니다.';
+                if (updateTab) updateTab.close();
+                if (openUpdatePage) alert('최신 버전 확인 시간이 초과되었습니다.');
             }
         });
     }
@@ -5859,6 +5873,7 @@
         }
 
         #bn-version-label {
+            cursor: pointer;
             flex: 0 0 auto;
             font-size: calc(10px * var(--bn-scale));
             font-weight: 500;
