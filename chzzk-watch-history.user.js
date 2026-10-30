@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.4
+// @version      2.9.5
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.3';
+    const SCRIPT_VERSION = '2.9.5';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
@@ -4982,6 +4982,9 @@
         const label = document.getElementById('bn-version-label');
         if (!label || typeof GM_xmlhttpRequest !== 'function') return;
 
+        // 클릭 이벤트 안에서 탭을 먼저 열어 비동기 응답後 팝업 차단을 피합니다.
+        const updateTab = openUpdatePage ? window.open('about:blank', '_blank') : null;
+
         GM_xmlhttpRequest({
             method: 'GET',
             url: 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js?check=' + Date.now(),
@@ -5006,7 +5009,7 @@
                     label.title = '최신 버전 V' + latest + '이 있습니다. Tampermonkey 대시보드에서 업데이트해 주세요.';
                     label.style.color = '#ffd166';
                     if (updateTab) updateTab.location.href = 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js';
-                    else if (openUpdatePage) window.open('https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js', '_blank');
+                    else if (openUpdatePage) alert('업데이트 탭이 차단되었습니다. 브라우저의 팝업 허용을 확인해주세요.');
                 } else {
                     label.textContent = 'V' + SCRIPT_VERSION;
                     label.title = comparison === 0
