@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.3
+// @version      2.9.4
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -5096,8 +5096,16 @@
                         reject(new Error('서버 응답이 JSON이 아닙니다.\nHTTP 상태: ' + response.status + '\n응답 형식: ' + contentType + '\n최종 주소: ' + responseUrl + '\n원인: ' + error.message));
                     }
                 },
-                onerror: () => reject(new Error('네트워크 연결 오류')),
-                ontimeout: () => reject(new Error('요청 시간이 초과되었습니다.'))
+                onerror: error => {
+                    const details = [
+                        '네트워크 요청이 실패했습니다.',
+                        '오류 유형: ' + (error?.error || error?.errorType || '확인 불가'),
+                        'HTTP 상태: ' + (error?.status ?? '응답 없음'),
+                        '브라우저에서 요청 자체가 차단되었거나 연결이 중단되었을 수 있습니다.'
+                    ];
+                    reject(new Error(details.join('\\n')));
+                },
+                ontimeout: () => reject(new Error('요청 시간이 초과되었습니다.\\n30초 동안 서버 응답이 없었습니다.'))
             });
         });
     }
