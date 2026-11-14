@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.7
+// @version      2.9.8
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.7';
+    const SCRIPT_VERSION = '2.9.8';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
@@ -2555,6 +2555,11 @@
             return;
         }
 
+        // 닫기 전에 현재 패널 크기를 저장해 다시 열 때 그대로 복원합니다.
+        if (!data.settings.panelCollapsed) {
+            savePanelSize();
+        }
+
         data.settings.panelClosed =
             true;
 
@@ -2586,10 +2591,10 @@
             'bn-reopen';
 
         reopenButton.textContent =
-            '봉누도';
+            '기록';
 
         reopenButton.title =
-            '봉누도 시청 기록 열기';
+            '시청 기록 열기';
 
         document.body.appendChild(
             reopenButton
@@ -2610,6 +2615,11 @@
 
         panel.style.display =
             '';
+
+        // 저장된 마지막 크기를 다시 적용합니다.
+        if (!data.settings.panelCollapsed) {
+            applyPanelSize();
+        }
 
         if (reopenButton) {
             reopenButton.style.display =
