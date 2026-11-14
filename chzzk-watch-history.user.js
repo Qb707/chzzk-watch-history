@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      2.9.9
+// @version      3.0.0
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '2.9.9';
+    const SCRIPT_VERSION = '3.0.0';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
@@ -2090,14 +2090,8 @@
 
                     <button
                         id="bn-collapse"
-                        title="패널 접기">
+                        title="패널 숨기기">
                         −
-                    </button>
-
-                    <button
-                        id="bn-close"
-                        title="닫기">
-                        ×
                     </button>
 
                 </div>
@@ -2202,13 +2196,6 @@
 
         document
             .getElementById('bn-collapse')
-            .addEventListener(
-                'click',
-                togglePanel
-            );
-
-        document
-            .getElementById('bn-close')
             .addEventListener(
                 'click',
                 closePanel
@@ -2555,10 +2542,11 @@
             return;
         }
 
-        // 닫기 전에 현재 패널 크기를 저장해 다시 열 때 그대로 복원합니다.
+        // 숨기기 전에 현재 패널 크기를 저장하고, 다시 열면 항상 전체 패널로 복원합니다.
         if (!data.settings.panelCollapsed) {
             savePanelSize();
         }
+        data.settings.panelCollapsed = false;
 
         data.settings.panelClosed =
             true;
@@ -4992,9 +4980,6 @@
         const label = document.getElementById('bn-version-label');
         if (!label || typeof GM_xmlhttpRequest !== 'function') return;
 
-        // 클릭 이벤트 안에서 탭을 먼저 열어 비동기 응답後 팝업 차단을 피합니다.
-        const updateTab = openUpdatePage ? window.open('about:blank', '_blank') : null;
-
         GM_xmlhttpRequest({
             method: 'GET',
             url: 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js?check=' + Date.now(),
@@ -5018,26 +5003,24 @@
                     label.textContent = 'V' + SCRIPT_VERSION + ' · 업데이트 있음';
                     label.title = '최신 버전 V' + latest + '이 있습니다. Tampermonkey 대시보드에서 업데이트해 주세요.';
                     label.style.color = '#ffd166';
-                    if (updateTab) updateTab.location.href = 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js';
-                    else if (openUpdatePage) alert('업데이트 탭이 차단되었습니다. 브라우저의 팝업 허용을 확인해주세요.');
+                    if (openUpdatePage) {
+                        alert('새 버전 V' + latest + '이 있습니다. Tampermonkey 대시보드에서 업데이트를 확인해주세요.');
+                    }
                 } else {
                     label.textContent = 'V' + SCRIPT_VERSION;
                     label.title = comparison === 0
                         ? '최신 버전입니다.'
                         : '현재 설치된 버전이 GitHub 최신 버전보다 높습니다.';
                     label.style.color = 'rgba(255,255,255,0.48)';
-                    if (updateTab) updateTab.close();
                     if (openUpdatePage) alert('현재 최신 버전입니다. (V' + SCRIPT_VERSION + ')');
                 }
             },
             onerror: () => {
                 label.title = '최신 버전을 확인하지 못했습니다. 네트워크 또는 GitHub 연결을 확인해 주세요.';
-                if (updateTab) updateTab.close();
                 if (openUpdatePage) alert('GitHub 연결에 실패했습니다.');
             },
             ontimeout: () => {
                 label.title = '최신 버전 확인 시간이 초과되었습니다.';
-                if (updateTab) updateTab.close();
                 if (openUpdatePage) alert('최신 버전 확인 시간이 초과되었습니다.');
             }
         });
