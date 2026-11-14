@@ -3,7 +3,7 @@
 // @namespace    https://tampermonkey.net/
 // @updateURL    https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
 // @downloadURL  https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js
-// @version      3.0.1
+// @version      3.0.2
 // @description  치지직 다시보기 시청 기록 관리 - 시리즈별 독립 기록 및 시청 위치 복구
 // @author       Qb
 // @match        https://chzzk.naver.com/*
@@ -33,7 +33,7 @@
     const ONLINE_LAST_SYNC_KEY = 'bongnudo_online_last_sync_v1';
     const ONLINE_BASELINE_KEY = 'bongnudo_online_baseline_v1';
     const ONLINE_SCHEMA_VERSION = 1;
-    const SCRIPT_VERSION = '3.0.1';
+    const SCRIPT_VERSION = '3.0.2';
 
     function seriesStorageKey(id) {
         return SERIES_DATA_PREFIX + id;
@@ -4985,9 +4985,17 @@
             url: 'https://raw.githubusercontent.com/Qb707/chzzk-watch-history/main/chzzk-watch-history.user.js?check=' + Date.now(),
             timeout: 15000,
             onload: response => {
-                if (response.status < 200 || response.status >= 300) return;
-                const match = String(response.responseText || '').match(/^\\s*\/\/ @version\\s+([^\\s]+)/m);
-                if (!match) return;
+                if (response.status < 200 || response.status >= 300) {
+                    label.title = 'GitHub 응답 오류: HTTP ' + response.status;
+                    if (openUpdatePage) alert('최신 버전을 확인하지 못했습니다. (HTTP ' + response.status + ')');
+                    return;
+                }
+                const match = String(response.responseText || '').match(/^\s*\/\/ @version\s+([^\s]+)/m);
+                if (!match) {
+                    label.title = 'GitHub 파일에서 버전 정보를 찾지 못했습니다.';
+                    if (openUpdatePage) alert('GitHub 파일에서 버전 정보를 찾지 못했습니다.');
+                    return;
+                }
 
                 const latest = match[1].trim();
                 const currentParts = SCRIPT_VERSION.split('.').map(Number);
